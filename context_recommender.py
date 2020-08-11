@@ -1,14 +1,12 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-import warnings
-import os.path
-import pickle
+import warnings, os.path, pickle, re
 
 def get_overview():
     movie_data = pd.read_csv("used_data/movies_metadata.csv")
     
-    # Assume high vote count == high viewer amount, thus using 90th percentile for more popular movie
+    # Assume high vote count == high viewer amount, thus using 90th percentile could get us more popular movie
     m = movie_data['vote_count'].quantile(.9)
     movie_data = movie_data[movie_data['vote_count'] > m]
     
@@ -55,6 +53,17 @@ def pipeline():
     pickle.dump(title_series, open("process_data/title_series.pyb", "wb"))
     return similarity, title_series
 
+def searchText(title, series):
+    for movie in series:
+        # Search if user input title is part of a movie's fullname
+        search = re.search(title + r'\s', movie)
+        if search:
+            print("\nYour inputed Movie is not in Database. We assume you meant: " + movie.title())
+            return True, movie
+    print("Movie not in Database. Try another Movie.\n")
+    return False, None
+
+
 def recommend(title, similarity, series, top=10):
     # Get the index of the user's input movie
     movie_ind = series[series == title].index[0]
@@ -84,12 +93,13 @@ def start_recommend():
         title = input("Enter a Movie you previously like: ")
         title = title.lower()
         if title not in title_series.values:
-            print("Movie not in Database. Try another Movie.\n")
+            # Use searchText function to check if movies of similar titles exist
+            accepted, title = searchText(title, title_series)
         else:
             accepted = True
 
     # Limit the max amount for better viewing        
-    amount = int(input("Enter number of Movies for recommendation (Max 50): "))
+    amount = int(input("\nEnter number of Movies for recommendation (Max 50): "))
     if amount > 50 : amount = 50
 
     # Get list of Recommender Movie
