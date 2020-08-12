@@ -8,7 +8,9 @@ def get_overview():
     
     # Assume high vote count == high viewer amount, thus using 90th percentile could get us more popular movie
     m = movie_data['vote_count'].quantile(.9)
-    movie_data = movie_data[movie_data['vote_count'] > m]
+
+    # Get only vote count 90th percentile movies, and drop any duplicates with same movie title
+    movie_data = movie_data[movie_data['vote_count'] > m].drop_duplicates(subset='original_title')
     
     # Data Cleanup by reseting messy index after cut and fill missing data
     movie_data = movie_data[["original_title", "overview"]].reset_index(drop=True)
