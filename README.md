@@ -23,3 +23,13 @@ Using this formula we could calculate scores for our movies, and recommend them 
 This way of recommending Movie, we're over generalizing our user's by assuming they'll all like the same type of Movies based on this scoring mechanism. 
 
 ## Content Based Recommender
+In this recommender we'll analyze the content of each Movies, and recommend the user with Movies that have similiar content with what they've previously liked.
+
+### How to Implement:
+In our dataset, there's a column with a brief overviews of each Movie. These text aren't necessary useful because the computer wont understand the semantics of behind them. So what we could do is turn them into vectors that're useful for computation.
+
+### Vectorization:
+The simplest way to vectorize words is using Count Vectorization, where we simply turn words into vector based on the frequency of each word.
+```
+ex. John has a dog named John. -> [John, has, a, dog, named] -> [2, 1, 1, 1, 1]
+```
