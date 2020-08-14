@@ -11,7 +11,7 @@ This recommender is fairly straight forward; this is a rather general approach a
 ### How to Implement:
 For this project, we'll score all the movies based on IMDb's rating formula: 
 
-<img src="https://render.githubusercontent.com/render/math?math=\large WeightedRating = \frac{v*R%2Bm*C}{v%2Bm}">
+<img src="https://render.githubusercontent.com/render/math?math=\large WeightedRating = \frac{v\times{R}%2Bm\times{C}}{v%2Bm}">
 
 - v: Number of Votes
 - m: Minumum of Votes to be considered
@@ -33,3 +33,11 @@ The simplest way to vectorize words is using Count Vectorization, where we simpl
 ```
 ex. John has a dog named John. -> [John, has, a, dog, named] -> [2, 1, 1, 1, 1]
 ```
+However, there's a problem with this method; as you can imagine words like 'a', 'an', 'is' or etc. would have a relatively high frequency but doesn't really contribute much on the context. Thus, a better method we could use is TF-IDF (term frequency–inverse document frequency).
+
+Where TF is the same as Count Vectorization which counts the frequency of each word, and IDF is the log of the total number of documents divided by the number of documents that contain that word. 
+
+This basically ensures rarer words have a higher weight than those with high frequency; which prevents the problem in Count Vectorization of overweighting meaningless words.
+
+### Similarity:
+After vectorizing all the movie overviews, we could simply compute the cosine similarity of between each movies via these vectors to find out how similar are these different movies. 
