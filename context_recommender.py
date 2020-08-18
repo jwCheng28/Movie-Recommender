@@ -92,7 +92,6 @@ def display_recommend(recommend_movie):
     for rank, movie in enumerate(recommend_movie, 1):
         print(rank, movie.title())
 
-
 def recommend(title, similarity, series, top=10):
     # Get the index of the user's input movie
     movie_ind = series.index(title)
@@ -114,6 +113,11 @@ def recommend(title, similarity, series, top=10):
     top_movie = [series[i] for i in top_ind]
     return top_movie
 
+def get_history():
+    movies = input("Please enter a list of movies you previously liked seperated by commas:\n")
+    movies = [m.strip() for m in movies.lower().split(',')]
+    return movies
+
 def history_rec(hist):
     print("\nProcessing Data...")
     similarity, title_series = pipeline()
@@ -134,8 +138,6 @@ def history_rec(hist):
 
     top_ind = [index for index, _ in movie_score[1:11]]
     top_movie = [title_series[i] for i in top_ind]
-
-    print("\nSome of Your Movie History: {}".format(accepted_movie[:10]))
 
     display_recommend(top_movie)
 
@@ -160,12 +162,23 @@ def start_recommend():
     recommend_movie = recommend(title, similarity, title_series, amount)
     display_recommend(recommend_movie)
 
+def _test_hist_rec():
+    _, title_series = pipeline()
+
+    cut = rd.randint(0, len(title_series)//4)
+    start = rd.randint(0, 100)
+    end = rd.randint(100, 200)
+
+    copy = title_series.copy()[cut:cut+200]
+    rd.shuffle(copy)
+
+    hist = copy[start:end]
+    history_rec(hist)
+
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
-    #start_recommend()    
-    _, title_series = pipeline()
-    x = rd.randint(0, len(title_series)//2)
-    y = rd.randint(len(title_series)//2, len(title_series))
+    #_test_hist_rec()
 
-    hist = title_series[x:y]
+    #start_recommend()    
+    hist = get_history()
     history_rec(hist)
