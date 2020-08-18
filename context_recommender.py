@@ -5,6 +5,8 @@ import warnings
 from os import path
 import pickle
 import re
+import numpy as np
+import random as rd
 
 def get_overview():
     movie_data = pd.read_csv("used_data/movies_metadata.csv")
@@ -73,8 +75,22 @@ def searchText(title, series):
         if search:
             print("\nYour inputed Movie is not in Database. We assume you meant: " + movie.title())
             return True, movie
-    print("Movie not in Database. Try another Movie.\n")
+    print(title.title() + " not in Movie Database. Try another Movie.")
     return False, None
+
+def db_check(title, title_series):
+    title = title.lower()
+    if title not in title_series:
+        # Use searchText function to check if movies of similar titles exist
+        accepted, title = searchText(title, title_series)
+    else:
+        accepted = True
+    return accepted, title
+
+def display_recommend(recommend_movie):
+    print("\nMovie Recommendation for You:")
+    for rank, movie in enumerate(recommend_movie, 1):
+        print(rank, movie.title())
 
 
 def recommend(title, similarity, series, top=10):
@@ -98,6 +114,31 @@ def recommend(title, similarity, series, top=10):
     top_movie = [series[i] for i in top_ind]
     return top_movie
 
+def history_rec(hist):
+    print("\nProcessing Data...")
+    similarity, title_series = pipeline()
+    print("Data Ready!\n")
+
+    accepted_movie = sorted([db_check(t, title_series) for t in hist])
+    accepted_movie = [m for b, m in accepted_movie if b]
+
+    ind = [title_series.index(m) for m in accepted_movie]
+
+    avg_score = np.zeros(len(similarity))
+    for i in ind:
+        avg_score += np.asarray(similarity[i])
+    avg_score /= len(ind)
+
+    movie_score = list(enumerate(avg_score))
+    movie_score = sorted(movie_score, key=lambda x : x[1], reverse=True)
+
+    top_ind = [index for index, _ in movie_score[1:11]]
+    top_movie = [title_series[i] for i in top_ind]
+
+    print("\nSome of Your Movie History: {}".format(accepted_movie[:10]))
+
+    display_recommend(top_movie)
+
 def start_recommend():
     # Start pipeline to get necessary data
     print("\nProcessing Data...")
@@ -108,12 +149,7 @@ def start_recommend():
     accepted = False
     while not accepted:
         title = input("Enter a Movie you previously like: ")
-        title = title.lower()
-        if title not in title_series:
-            # Use searchText function to check if movies of similar titles exist
-            accepted, title = searchText(title, title_series)
-        else:
-            accepted = True
+        accepted, title = db_check(title, title_series)
 
     # Limit the max amount for better viewing        
     amount = int(input("\nEnter number of Movies for recommendation (Max 50): "))
@@ -122,10 +158,14 @@ def start_recommend():
 
     # Get list of Recommender Movie
     recommend_movie = recommend(title, similarity, title_series, amount)
-    print("\nMovie Recommendation for You:")
-    for rank, movie in enumerate(recommend_movie, 1):
-        print(rank, movie.title())
+    display_recommend(recommend_movie)
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
-    start_recommend()    
+    #start_recommend()    
+    _, title_series = pipeline()
+    x = rd.randint(0, len(title_series)//2)
+    y = rd.randint(len(title_series)//2, len(title_series))
+
+    hist = title_series[x:y]
+    history_rec(hist)
