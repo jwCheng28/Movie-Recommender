@@ -15,6 +15,7 @@ def get_overview():
     # Get only vote count 90th percentile movies, and drop any duplicates with same movie title
     movie_data = movie_data[movie_data['vote_count'] > m].drop_duplicates(subset='original_title')
     
+    # Sort alphabetically for better searching later on
     movie_data = movie_data.sort_values(by=['original_title'])
 
     # Data Cleanup by reseting messy index after cut and fill missing data
@@ -23,7 +24,7 @@ def get_overview():
     return movie_data
 
 def get_tfidf_matrix(df):
-    # Using stop words to remove unneccasary words 
+    # Using TF-IDF with stop words to remove unneccasary words 
     tfidf = TfidfVectorizer(stop_words="english")
     
     # Create TF-IDF Matrix for Movie overview
@@ -48,22 +49,27 @@ def pipeline():
         similarity = pickle.load(open("process_data/similarity.pyb", "rb"))
         title_series = pickle.load(open("process_data/title_series.pyb", "rb"))
 
+    # Pipeline for processing the data and save data
     else:    
-        # Pipeline for processing the data and save data
         movie_data = get_overview()
         title_series = movie_index(movie_data)
         M = get_tfidf_matrix(movie_data)
-        movie_data = None
         similarity = get_similarity(M)
-        M = None
+        movie_data, M = None, None
         pickle.dump(similarity, open("process_data/similarity.pyb", "wb"))
         pickle.dump(title_series, open("process_data/title_series.pyb", "wb"))
     return similarity, title_series
 
 def searchText(title, series):
     for movie in series:
-        # Search if user input title is part of a movie's fullname
-        search = re.search(title + r'\s', movie)
+        # Remove any symbols or punctuations for better search
+        clean_title = re.sub(r'[^\s\w]', ' ', movie)
+
+        # Search if part of user's input title is part of a movie's fullname
+        name_search = re.search(r'(^|[ ]){}\s'.format(title), clean_title)
+        split_search =  re.search(r'(^|[ ]){}\s'.format(title.split()[0]), clean_title)
+
+        search = name_search or split_search
         if search:
             print("\nYour inputed Movie is not in Database. We assume you meant: " + movie.title())
             return True, movie
@@ -77,6 +83,8 @@ def recommend(title, similarity, series, top=10):
 
     # List of movie index and movie similarity score
     movie_scores = list(enumerate(similarity[movie_ind]))
+    
+    # Sort from highest similarity score to lowest
     movie_scores = sorted(movie_scores, key=lambda x : x[1], reverse=True)
 
     # Prevent going out of Movie List
@@ -85,6 +93,8 @@ def recommend(title, similarity, series, top=10):
 
     # Get index of top movies, skip 1 as it's itself
     top_ind = [index for index, _ in movie_scores[1:top + 1]]
+
+    # Get title of top movies with given index
     top_movie = [series[i] for i in top_ind]
     return top_movie
 
@@ -107,7 +117,8 @@ def start_recommend():
 
     # Limit the max amount for better viewing        
     amount = int(input("\nEnter number of Movies for recommendation (Max 50): "))
-    if amount > 50 : amount = 50
+    if amount > 50 : 
+        amount = 50
 
     # Get list of Recommender Movie
     recommend_movie = recommend(title, similarity, title_series, amount)
