@@ -114,7 +114,7 @@ def recommend(title, similarity, series, top=10):
     return top_movie
 
 def get_history():
-    movies = input("Please enter a list of movies you previously liked seperated by commas:\n")
+    movies = input("\nPlease enter a list of movies you previously liked seperated by commas:\n")
     movies = [m.strip() for m in movies.lower().split(',')]
     return movies
 
@@ -173,12 +173,16 @@ def _test_hist_rec():
     rd.shuffle(copy)
 
     hist = copy[start:end]
+    print("\nSome of Test History: {}".format(hist[:10]))
     history_rec(hist)
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
     #_test_hist_rec()
-
-    #start_recommend()    
-    hist = get_history()
-    history_rec(hist)
+    rec = input("Do you want Movie Recommendation based on 1 Movie or a list of Movies\n"
+                "(Press 1 for 1, Press anything for multiple)\n")
+    if rec == '1':
+        start_recommend()    
+    else:
+        hist = get_history()
+        history_rec(hist)
