@@ -1,7 +1,10 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-import warnings, os.path, pickle, re
+import warnings
+from os import path
+import pickle
+import re
 
 def get_overview():
     movie_data = pd.read_csv("used_data/movies_metadata.csv")
@@ -12,6 +15,8 @@ def get_overview():
     # Get only vote count 90th percentile movies, and drop any duplicates with same movie title
     movie_data = movie_data[movie_data['vote_count'] > m].drop_duplicates(subset='original_title')
     
+    movie_data = movie_data.sort_values(by=['original_title'])
+
     # Data Cleanup by reseting messy index after cut and fill missing data
     movie_data = movie_data[["original_title", "overview"]].reset_index(drop=True)
     movie_data['overview'] = movie_data['overview'].fillna('')
@@ -35,24 +40,24 @@ def movie_index(df):
 
     # Change all to lowercase to avoid case mismatch later on
     title_series = title_series.str.lower()
-    return title_series
+    return list(title_series)
 
 def pipeline():
     # If the processed data has been saved before just use that
-    if os.path.isfile('process_data/similarity.pyb') and os.path.isfile('process_data/title_series.pyb'):
+    if path.isfile('process_data/similarity.pyb') and path.isfile('process_data/title_series.pyb'):
         similarity = pickle.load(open("process_data/similarity.pyb", "rb"))
         title_series = pickle.load(open("process_data/title_series.pyb", "rb"))
-        return similarity, title_series
-    
-    # Pipeline for processing the data and save data
-    movie_data = get_overview()
-    title_series = movie_index(movie_data)
-    M = get_tfidf_matrix(movie_data)
-    movie_data = None
-    similarity = get_similarity(M)
-    M = None
-    pickle.dump(similarity, open("process_data/similarity.pyb", "wb"))
-    pickle.dump(title_series, open("process_data/title_series.pyb", "wb"))
+
+    else:    
+        # Pipeline for processing the data and save data
+        movie_data = get_overview()
+        title_series = movie_index(movie_data)
+        M = get_tfidf_matrix(movie_data)
+        movie_data = None
+        similarity = get_similarity(M)
+        M = None
+        pickle.dump(similarity, open("process_data/similarity.pyb", "wb"))
+        pickle.dump(title_series, open("process_data/title_series.pyb", "wb"))
     return similarity, title_series
 
 def searchText(title, series):
@@ -68,7 +73,7 @@ def searchText(title, series):
 
 def recommend(title, similarity, series, top=10):
     # Get the index of the user's input movie
-    movie_ind = series[series == title].index[0]
+    movie_ind = series.index(title)
 
     # List of movie index and movie similarity score
     movie_scores = list(enumerate(similarity[movie_ind]))
@@ -94,7 +99,7 @@ def start_recommend():
     while not accepted:
         title = input("Enter a Movie you previously like: ")
         title = title.lower()
-        if title not in title_series.values:
+        if title not in title_series:
             # Use searchText function to check if movies of similar titles exist
             accepted, title = searchText(title, title_series)
         else:
