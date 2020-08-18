@@ -136,10 +136,10 @@ def history_rec(hist):
     movie_score = list(enumerate(avg_score))
     movie_score = sorted(movie_score, key=lambda x : x[1], reverse=True)
 
-    top_ind = [index for index, _ in movie_score[1:11]]
-    top_movie = [title_series[i] for i in top_ind]
+    top_ind = [index for index, _ in movie_score]
+    top_movie = [title_series[i] for i in top_ind if title_series[i] not in accepted_movie]
 
-    display_recommend(top_movie)
+    display_recommend(top_movie[:10])
 
 def start_recommend():
     # Start pipeline to get necessary data
