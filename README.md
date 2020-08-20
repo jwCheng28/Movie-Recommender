@@ -37,7 +37,11 @@ However, there's a problem with this method; as you can imagine words like 'a', 
 
 Where TF is the same as Count Vectorization which counts the frequency of each word, and IDF is the log of the total number of documents divided by the number of documents that contain that word. 
 
+![alt text](https://github.com/jwCheng28/Movie-Recommender/blob/master/pics/tfidf.png)
+
 This basically ensures rarer words have a higher weight than those with high frequency; which prevents the problem in Count Vectorization of overweighting meaningless words.
 
 ### Similarity:
 After vectorizing all the movie overviews, we could simply compute the cosine similarity of between each movies via these vectors to find out how similar are these different movies. 
+
+Then, we could sort all the movies based on their similarity score to the user's favorite movie; and the those with high similarity score would be recommended to the user.
