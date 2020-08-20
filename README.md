@@ -45,3 +45,7 @@ This basically ensures rarer words have a higher weight than those with high fre
 After vectorizing all the movie overviews, we could simply compute the cosine similarity of between each movies via these vectors to find out how similar are these different movies. 
 
 Then, we could sort all the movies based on their similarity score to the user's favorite movie; and the those with high similarity score would be recommended to the user.
+
+## Demo
+<img src="./pics/demo_.gif" width="850" height="550"/>
+
