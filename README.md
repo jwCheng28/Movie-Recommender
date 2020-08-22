@@ -49,3 +49,5 @@ Then, we could sort all the movies based on their similarity score to the user's
 ## Demo
 <img src="./pics/demo_.gif" width="850" height="550"/>
 
+## Data Source
+The data used in this project could be found within Kaggle (https://www.kaggle.com/rounakbanik/the-movies-dataset).
