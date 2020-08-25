@@ -9,6 +9,10 @@ import numpy as np
 import random as rd
 
 def get_overview():
+    '''
+    Return:
+     - Pandas df with [Movie Name, Movie Overview]
+    '''
     movie_data = pd.read_csv("used_data/movies_metadata.csv")
     
     # Assume high vote count == high viewer amount, thus using 90th percentile could get us more popular movie
@@ -26,6 +30,10 @@ def get_overview():
     return movie_data
 
 def get_tfidf_matrix(df):
+    '''
+    Return:
+     - List TFIDF Vector for all Movies -> TFIDF Matrix 
+    '''
     # Using TF-IDF with stop words to remove unneccasary words 
     tfidf = TfidfVectorizer(stop_words="english")
     
@@ -40,7 +48,6 @@ def get_similarity(M):
 
 def movie_index(df):
     title_series = df['original_title']
-
     # Change all to lowercase to avoid case mismatch later on
     title_series = title_series.str.lower()
     return list(title_series)
@@ -62,7 +69,12 @@ def pipeline():
         pickle.dump(title_series, open("process_data/title_series.pyb", "wb"))
     return similarity, title_series
 
-def searchText(title, series):
+def _searchText(title, series):
+    '''
+    Return:
+     - Bool: if Movie is in Database
+     - Title of Movie if movie is in DB
+    '''
     for movie in series:
         # Remove any symbols or punctuations for better search
         clean_title = re.sub(r'[^\s\w]', ' ', movie)
@@ -82,7 +94,7 @@ def db_check(title, title_series):
     title = title.lower()
     if title not in title_series:
         # Use searchText function to check if movies of similar titles exist
-        accepted, title = searchText(title, title_series)
+        accepted, title = _searchText(title, title_series)
     else:
         accepted = True
     return accepted, title
@@ -114,6 +126,10 @@ def recommend(title, similarity, series, top=10):
     return top_movie
 
 def get_history():
+    '''
+    Return:
+     - List of Movie based on User input
+    '''
     movies = input("\nPlease enter a list of movies you previously liked seperated by commas:\n")
     movies = [m.strip() for m in movies.lower().split(',')]
     return movies
@@ -123,9 +139,11 @@ def history_rec(hist):
     similarity, title_series = pipeline()
     print("Data Ready!\n")
 
+    # Check if input Movie is in DB
     accepted_movie = sorted([db_check(t, title_series) for t in hist])
+    # List of Movie Name that are in DB
     accepted_movie = [m for b, m in accepted_movie if b]
-
+    # Index of Movie in DB
     ind = [title_series.index(m) for m in accepted_movie]
 
     avg_score = np.zeros(len(similarity))
@@ -178,7 +196,8 @@ def _test_hist_rec():
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
-    #_test_hist_rec()
+    test = False
+    if test: _test_hist_rec()
     rec = input("Do you want Movie Recommendation based on 1 Movie or a list of Movies\n"
                 "(Press 1 for 1, Press anything for multiple)\n")
     if rec == '1':
